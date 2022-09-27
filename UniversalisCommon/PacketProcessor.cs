@@ -18,6 +18,8 @@ namespace UniversalisCommon
 
         private readonly IDictionary<short, Func<byte[], bool>> _packetHandlers;
 
+        private bool _viewingRetainer;
+
         public uint CurrentWorldId { get; set; }
         public ulong LocalContentId { get; set; }
 
@@ -32,6 +34,7 @@ namespace UniversalisCommon
             var definitions = Definitions.Get();
             _packetHandlers = new Dictionary<short, Func<byte[], bool>>
             {
+                { definitions.ClientTrigger, ProcessClientTrigger },
                 { definitions.PlayerSpawn, ProcessPlayerSpawn },
                 { definitions.PlayerSetup, ProcessPlayerSetup },
                 { definitions.MarketBoardItemListingCount, ProcessMarketBoardItemListingCount },
@@ -246,6 +249,33 @@ namespace UniversalisCommon
         private bool ProcessPlayerSpawn(byte[] message)
         {
             CurrentWorldId = BitConverter.ToUInt16(message, 0x24);
+
+            return false;
+        }
+
+        private bool ProcessClientTrigger(byte[] message)
+        {
+            var commandId = BitConverter.ToUInt16(message, 0x20);
+            if (commandId != 0x232c)
+            {
+                return false;
+            }
+
+            // 2: Interacting with retainer bell
+            // 4: Viewing retainer
+            // 3: Exiting retainer
+            var state = BitConverter.ToUInt32(message, 0x28);
+            switch (_viewingRetainer)
+            {
+                case false when state == 4:
+                    _viewingRetainer = true;
+                    Log?.Invoke(this, "Now viewing retainer");
+                    break;
+                case true when state == 3:
+                    _viewingRetainer = false;
+                    Log?.Invoke(this, "No longer viewing retainer");
+                    break;
+            }
 
             return false;
         }

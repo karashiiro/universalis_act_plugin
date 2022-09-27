@@ -18,7 +18,7 @@ namespace UniversalisCommon
 
         private readonly IDictionary<short, Func<byte[], bool>> _packetHandlers;
 
-        private bool _viewingRetainer;
+        private RetainerContext _retainerContext;
 
         public uint CurrentWorldId { get; set; }
         public ulong LocalContentId { get; set; }
@@ -37,6 +37,7 @@ namespace UniversalisCommon
                 { definitions.ClientTrigger, ProcessClientTrigger },
                 { definitions.PlayerSpawn, ProcessPlayerSpawn },
                 { definitions.PlayerSetup, ProcessPlayerSetup },
+                { definitions.ItemMarketBoardInfo, ProcessItemMarketBoardInfo },
                 { definitions.MarketBoardItemListingCount, ProcessMarketBoardItemListingCount },
                 { definitions.MarketBoardItemListing, ProcessMarketBoardItemListing },
                 { definitions.MarketBoardItemListingHistory, ProcessMarketBoardItemListingHistory },
@@ -135,6 +136,12 @@ namespace UniversalisCommon
             request.History.AddRange(listing.HistoryListings);
 
             Log?.Invoke(this, $"Added history for item#{listing.CatalogId}");
+            return false;
+        }
+
+        private bool ProcessItemMarketBoardInfo(byte[] message)
+        {
+            var itemInfo = ItemMarketBoardInfo.Read(message.Skip(0x20).ToArray());
             return false;
         }
 
@@ -265,14 +272,14 @@ namespace UniversalisCommon
             // 4: Viewing retainer
             // 3: Exiting retainer
             var state = BitConverter.ToUInt32(message, 0x28);
-            switch (_viewingRetainer)
+            switch (state)
             {
-                case false when state == 4:
-                    _viewingRetainer = true;
+                case 4:
+                    _retainerContext = new RetainerContext();
                     Log?.Invoke(this, "Now viewing retainer");
                     break;
-                case true when state == 3:
-                    _viewingRetainer = false;
+                case 3:
+                    _retainerContext = null;
                     Log?.Invoke(this, "No longer viewing retainer");
                     break;
             }

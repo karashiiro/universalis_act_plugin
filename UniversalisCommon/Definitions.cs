@@ -9,6 +9,7 @@ namespace UniversalisCommon
         public short ClientTrigger { get; set; }
         public short PlayerSpawn { get; set; }
         public short PlayerSetup { get; set; }
+        public short ItemMarketBoardInfo { get; set; }
         [Obsolete] public short MarketBoardItemRequestStart { get; set; }
         [Obsolete] public short MarketBoardOfferings { get; set; }
         [Obsolete] public short MarketBoardHistory { get; set; }

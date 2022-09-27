@@ -34,11 +34,11 @@ namespace UniversalisCommon
             {
                 { definitions.PlayerSpawn, ProcessPlayerSpawn },
                 { definitions.PlayerSetup, ProcessPlayerSetup },
-                { definitions.MarketBoardItemRequestStart, ProcessMarketBoardItemRequestStart },
-                { definitions.MarketBoardOfferings, ProcessMarketBoardOfferings },
-                { definitions.MarketBoardHistory, ProcessMarketBoardHistory },
-                { definitions.MarketTaxRates, ProcessMarketTaxRates },
-                { definitions.ContentIdNameMapResp, ProcessContentIdNameMapResp },
+                { definitions.MarketBoardItemListingCount, ProcessMarketBoardItemListingCount },
+                { definitions.MarketBoardItemListing, ProcessMarketBoardItemListing },
+                { definitions.MarketBoardItemListingHistory, ProcessMarketBoardItemListingHistory },
+                { definitions.ResultDialog, ProcessResultDialog },
+                { definitions.CharaNameReq, ProcessCharaNameReq },
             };
         }
 
@@ -53,7 +53,7 @@ namespace UniversalisCommon
             return _packetHandlers.TryGetValue(opcode, out var handler) && handler(message);
         }
 
-        private bool ProcessContentIdNameMapResp(byte[] message)
+        private bool ProcessCharaNameReq(byte[] message)
         {
             var cid = BitConverter.ToUInt64(message, 0x20);
             var name = Encoding.UTF8.GetString(message, 0x28, 32).TrimEnd('\u0000');
@@ -70,7 +70,7 @@ namespace UniversalisCommon
             }
         }
 
-        private bool ProcessMarketTaxRates(byte[] message)
+        private bool ProcessResultDialog(byte[] message)
         {
             var taxRates = MarketTaxRates.Read(message.Skip(0x20).ToArray());
 
@@ -109,7 +109,7 @@ namespace UniversalisCommon
             }
         }
 
-        private bool ProcessMarketBoardHistory(byte[] message)
+        private bool ProcessMarketBoardItemListingHistory(byte[] message)
         {
             var listing = MarketBoardHistory.Read(message.Skip(0x20).ToArray());
 
@@ -135,7 +135,7 @@ namespace UniversalisCommon
             return false;
         }
 
-        private bool ProcessMarketBoardOfferings(byte[] message)
+        private bool ProcessMarketBoardItemListing(byte[] message)
         {
             var listing = MarketBoardCurrentOfferings.Read(message.Skip(0x20).ToArray());
 
@@ -218,7 +218,7 @@ namespace UniversalisCommon
             return false;
         }
 
-        private bool ProcessMarketBoardItemRequestStart(byte[] message)
+        private bool ProcessMarketBoardItemListingCount(byte[] message)
         {
             var catalogId = (uint)BitConverter.ToInt32(message, 0x20);
             var amount = message[0x2B];

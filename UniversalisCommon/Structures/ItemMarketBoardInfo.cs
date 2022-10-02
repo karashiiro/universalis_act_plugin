@@ -4,16 +4,18 @@ namespace Dalamud.Game.Network.Structures
 {
     public struct ItemMarketBoardInfo
     {
-        public ushort Container;
-        public ushort Slot;
+        public uint Sequence;
+        public uint ContainerId;
+        public uint SlotId;
         public uint PricePerUnit;
 
         public static ItemMarketBoardInfo Read(byte[] data)
         {
             return new ItemMarketBoardInfo
             {
-                Container = BitConverter.ToUInt16(data, 0x0),
-                Slot = BitConverter.ToUInt16(data, 0x8),
+                Sequence = BitConverter.ToUInt32(data, 0x0),
+                ContainerId = BitConverter.ToUInt32(data, 0x4),
+                SlotId = BitConverter.ToUInt32(data, 0x8),
                 PricePerUnit = BitConverter.ToUInt32(data, 0x10),
             };
         }
